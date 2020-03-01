@@ -16,13 +16,13 @@ docker pull albeture/ioyente:latest
 
 #starting new instance with mongo dependency install
 
-docker run -i --name=vsolgraph -w "/home" -v /outputs:/tmp/outputs isolgraph bash < mongodb_install.sh
-docker run -i --name=vsmartcheck  --volumen-from vsolgraph ismartcheck bash < mongodb_install.sh
-docker run -i --name=vcontractlarva --volumen-from vsolgraph icontractlarva bash < mongodb_install.sh
-docker run -i --name=vsolmet --volumen-from vsolgraph isolmet bash < mongodb_install.sh
-docker run -i --name=vvandal --volumen-from vsolgraph ivandal bash < mongodb_install.sh
-docker run -i --name=vethir --volumen-from vsolgraph iethir bash < mongodb_install.sh
-docker run -i --name=vsecurify --volumen-from vsolgraph isecurify bash < mongodb_install.sh
-docker run -i --name=vmadmax --volumen-from vsolgraph imadmax bash < mongodb_install.sh
-docker run -i --name=vosiris --volumen-from vsolgraph iosiris bash < mongodb_install.sh
-docker run -i --name=voyente --volumen-from vsolgraph ioyente bash < mongodb_install.sh
+docker run -i --name=vsolgraph -w "/home" -v /outputs:/tmp/outputs albeture/isolgraph bash < mongodb_install.sh
+docker run -i --name=vsmartcheck  --volumen-from vsolgraph albeture/ismartcheck bash < mongodb_install.sh
+docker run -i --name=vcontractlarva --volumen-from vsolgraph albeture/icontractlarva bash < mongodb_install.sh
+docker run -i --name=vsolmet --volumen-from vsolgraph albeture/isolmet bash < mongodb_install.sh
+docker run -i --name=vvandal --volumen-from vsolgraph albeture/ivandal bash < mongodb_install.sh
+docker run -i --name=vethir --volumen-from vsolgraph albeture/iethir bash < mongodb_install.sh
+docker run -i --name=vsecurify --volumen-from vsolgraph albeture/isecurify bash < mongodb_install.sh
+docker run -i --name=vmadmax --volumen-from vsolgraph albeture/imadmax bash < mongodb_install.sh
+docker run -i --name=vosiris --volumen-from vsolgraph albeture/iosiris bash < mongodb_install.sh
+docker run -i --name=voyente -w "/oyente/oyente" --volumen-from vsolgraph albeture/ioyente bash < mongodb_install.sh
