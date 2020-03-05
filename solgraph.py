@@ -1,7 +1,8 @@
 import subprocess, sys, getopt
 
 TOOL = 'SOLGRAPH'
-
+PATH_TO_TMP = '/tmp'
+PATH_TO_OUTPUT = '/outputs'
 
 def launch(file):
     with open(file, 'w+') as f:
