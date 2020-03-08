@@ -14,12 +14,11 @@ docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 TOOLS = ['vsolgraph', 'voyente']
 SOL_TOOLS = ['vsolgraph', 'voyente']
 SCRIPTS = ['solgraph']
-PATH_TO_MAIN_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO/'
 
 
 def mongo_connection():
     client = MongoClient("127.0.0.1", 27017)
-    db = client.mydb
+    db = client.my
     collection = db[constants.MONGO_COLLECTION]
     return collection
 
@@ -109,8 +108,7 @@ class ToolFactory:
     def _solgpraph_analyzer(self, tool_data, file):
         if file:
             cmd = ["python", "{} -n {}".format(tool_data.get('tool_script'), file)]
-            container = docker_client.exec_create(tool_data.get('container_name'), cmd,
-                                                  workdir=tool_data.get('workdir'), privileged=True)
+            container = docker_client.exec_create(tool_data.get('container_name'), cmd, workdir='/home' , privileged=True)
             docker_client.exec_start(container)
 
     def _smartcheck_analyzer(self, custom_params):

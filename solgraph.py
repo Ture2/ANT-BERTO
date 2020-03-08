@@ -1,13 +1,19 @@
-import subprocess, sys, getopt
+import shlex, subprocess, sys, getopt
 
 TOOL = 'SOLGRAPH'
 PATH_TO_TMP = '/tmp'
 PATH_TO_OUTPUT = '/outputs'
 
 def launch(file):
-    with open(file, 'w+') as f:
-        p = subprocess.Popen(['solgraph', file], stdout=f, stderr=f)
+    file_path = 'tmp/outputs/{}.sol'.format(file)
+    output_file = 'tmp/outputs/solgraph/{}.dot'.format(file)
+    cmd = ['solgraph', file_path]
+    #args = shlex.split(cmd)
+    #print(args)
+    with open(output_file, 'w+') as f:
+        p = subprocess.Popen(cmd, stdout=f, stderr=f)
         output, errors = p.communicate()
+        print(output, errors)
 
 
 def main(argv):

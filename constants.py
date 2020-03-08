@@ -1,10 +1,10 @@
-MONGO_COLLECTION = 'contratos'
+MONGO_COLLECTION = 'contratos_full'
 PATH_TO_MAIN_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO/'
 
 TOOLS = (
     {
         "container_name": "vsolgraph",
-        "workdir": "/home",
+        "workdir": "/home/",
         "tool_script": "solgraph.py",
         "tool_name_inside_container": "solgraph",
         "tool_name": "solgraph",
@@ -13,7 +13,7 @@ TOOLS = (
     },
     {
         "container_name": "voyente",
-        "workdir": "/oyente/oyente",
+        "workdir": "/oyente/oyente/",
         "tool_script": "myoyente.py",
         "tool_name_inside_container": "oyente.py",
         "tool_name": "oyente",
