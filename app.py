@@ -107,9 +107,10 @@ class ToolFactory:
 
     def _solgpraph_analyzer(self, tool_data, file):
         if file:
-            cmd = ["python", "{} -n {}".format(tool_data.get('tool_script'), file)]
-            container = docker_client.exec_create(tool_data.get('container_name'), cmd, workdir='/home' , privileged=True)
-            docker_client.exec_start(container)
+            cmd = "python {} -n {}".format(tool_data.get('tool_script'), file)
+            container = docker_client.exec_create(tool_data.get('container_name'), cmd, workdir='/home/', privileged=True)
+            log = docker_client.exec_start(container, stream=True)
+            print(log)
 
     def _smartcheck_analyzer(self, custom_params):
         return 0
@@ -138,7 +139,7 @@ class ToolFactory:
     def _oyente_analyzer(self, tool_data, file):
         cmd = ["python", "{} -n {}".format(tool_data.get('tool_script'), file)]
         container = docker_client.exec_create(tool_data.get('container_name'), cmd, workdir=tool_data.get('workdir'), privileged=True)
-        docker_client.exec_start(container)
+        docker_client.exec_start(container, stream=True)
 
 
 def get_all_contract_id():

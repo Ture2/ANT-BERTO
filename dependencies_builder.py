@@ -27,7 +27,7 @@ def get_content(tool, id):
         file_extension = 'sol'
         content = get_contract(id)['solidity']
         if type(content) is list:
-            return content[0].get('SourceCode')
+            return content[0].get('SourceCode'), file_extension
     elif tool.upper() in ['OYENTE']:
         file_extension = 'hex'
         content = get_contract(id)['bytecode']
@@ -41,6 +41,6 @@ def doc_creation(tool, id):
         f = open(path_to_input_file, "w+")
         f.write(code)
         f.close()
-        return path_to_input_file
+        return generic_file
     else:
         return False

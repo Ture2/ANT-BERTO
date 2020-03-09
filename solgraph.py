@@ -5,8 +5,8 @@ PATH_TO_TMP = '/tmp'
 PATH_TO_OUTPUT = '/outputs'
 
 def launch(file):
-    file_path = 'tmp/outputs/{}.sol'.format(file)
-    output_file = 'tmp/outputs/solgraph/{}.dot'.format(file)
+    file_path = '../tmp/outputs/{}.sol'.format(file)
+    output_file = '../tmp/outputs/solgraph/{}.dot'.format(file)
     cmd = ['solgraph', file_path]
     #args = shlex.split(cmd)
     #print(args)
