@@ -9,7 +9,7 @@ from pymongo import MongoClient
 
 # HOST
 
-VERSION = 0.1
+VERSION = 0.2
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 TOOLS = ['vsolgraph', 'voyente']
 SOL_TOOLS = ['vsolgraph', 'voyente']
@@ -37,109 +37,39 @@ def init():
             docker_client.start(tool.get('container_name'))
         except:
             print ("El docker " + tool.get('container_name') + " no existe")
-        if not final_name_list.__contains__(tool.get('container_name')):
-            copy_file_to_container(constants.PATH_TO_MAIN_DIRECTORY + tool.get('tool_script'), tool.get('workdir'),
-                                   tool.get('container_name'))
-        print(docker_client.logs(tool.get('container_name')))
 
 
-# src: str to source file directory
-# dst: str to destiny inside container
-# cname: target container name
+
+def execute_command(type ,file, output_file):
+    if os.path.isfile(constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + file):
+        if type == 1:
+            for tool in constants.HEX_TOOLS:
+                cmd = tool.get("cmd").format(file)
+                execution = docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'), privileged=True)
+                res_iter = docker_client.exec_start(execution, stream=True, demux=True)
+                result = ""
+                for line in res_iter:
+                    result += line[1]
+                dependencies_builder.save_results(result, output_file)
+        elif type == 0:
+            for tool in constants.SOL_TOOLS:
+                cmd = tool.get("cmd").format(file)
+                execution = docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
+                                                      privileged=True)
+                res_iter = docker_client.exec_start(execution, stream=True, demux=True)
+                result = ""
+                for line in res_iter:
+                    result += line[0]
+                dependencies_builder.save_results(result, output_file)
 
 
-def copy_file_to_container(src, dst, cname):
-    os.chdir(os.path.dirname(src))
-    srcname = os.path.basename(src)
-    file = src + '.tar'
-    tar = tarfile.open(file, 'w')
-    try:
-        tar.add(srcname)
-    finally:
-        tar.close()
-        data = open(file, 'rb').read()
-        docker_client.put_archive(cname, os.path.dirname(dst), data)
-        os.remove(file)
+def analyze(contract):
+    input_sol_file = 'input_' + contract.get_name() + '.sol'
+    input_hex_file = 'input_' + contract.get_name() + '.hex'
+    output_file = 'output_{}.txt'.format(contract.get_name())
+    execute_command(0, input_sol_file, output_file)
+    execute_command(1, input_hex_file, output_file)
 
-
-def has_solidity_code(id):
-    collection = mongo_connection()
-    contract = collection.find({'contract_id': id})
-    if not contract['solidity']:
-        return False
-    else:
-        return True
-
-
-class ToolFactory:
-    def analyze(self, tool_data, contract_id):
-        file_name = dependencies_builder.doc_creation(tool_data.get('tool_name'), contract_id)
-        if file_name:
-            tool = self._get_tool(tool_data)
-            return tool(tool_data, file_name)
-        else:
-            return False
-
-    def _get_tool(self, tool_data):
-        cname = tool_data.get('container_name')
-        if cname == TOOLS[0]:
-            return self._solgpraph_analyzer
-        elif cname == TOOLS[1]:
-            return self._oyente_analyzer
-        '''
-        elif container == TOOLS[1]:
-            return self._smartcheck_analyzer
-        elif container == TOOLS[2]:
-            return self._contractlarva_analyzer
-        elif container == TOOLS[3]:
-            return self._solmet_analyzer
-        elif container == TOOLS[4]:
-            return self._ethir_analyzer
-        elif container == TOOLS[5]:
-            return self._securify_analyzer
-        elif container == TOOLS[6]:
-            return self._madmax_analyzer
-        elif container == TOOLS[7]:
-            return self._osiris_analyzer
-        elif container == TOOLS[8]:
-            return self._oyente_analyzer
-        '''
-
-    def _solgpraph_analyzer(self, tool_data, file):
-        if file:
-            cmd = "python {} -n {}".format(tool_data.get('tool_script'), file)
-            container = docker_client.exec_create(tool_data.get('container_name'), cmd=cmd, workdir='/home/', privileged=True)
-            log = docker_client.exec_start(container, stream=True)
-            print(log)
-
-    def _smartcheck_analyzer(self, custom_params):
-        return 0
-
-    def _contractlarva_analyzer(self, custom_params):
-        return 0
-
-    def _solmet_analyzer(self, custom_params):
-        return 0
-
-    def _vandal_analyzer(self, custom_params):
-        return 0
-
-    def _ethir_analyzer(self, custom_params):
-        return 0
-
-    def _securify_analyzer(self, custom_params):
-        return 0
-
-    def _madmax_analyzer(self, custom_params):
-        return 0
-
-    def _osiris_analyzer(self, custom_params):
-        return 0
-
-    def _oyente_analyzer(self, tool_data, file):
-        cmd = ["python", "{} -n {}".format(tool_data.get('tool_script'), file)]
-        container = docker_client.exec_create(tool_data.get('container_name'), cmd=cmd, workdir=tool_data.get('workdir'), privileged=True)
-        docker_client.exec_start(container, stream=True)
 
 
 def get_all_contract_id():
@@ -149,13 +79,10 @@ def get_all_contract_id():
 
 
 def test():
-    # Get contract ids
     c_contracts = get_all_contract_id()
-    cont = 0
-    tool_factory = ToolFactory()
     for contract in c_contracts:
-        for tool in constants.TOOLS:
-            tool_factory.analyze(tool, contract['contract_id'])
+        c = dependencies_builder.create_contract(contract['contract_id'])
+        analyze(c)
 
 
 def main(argv):

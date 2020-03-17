@@ -1,15 +1,26 @@
-import subprocess, sys, getopt
-import argparse
-from pymongo import MongoClient
+import getopt
+import os
+import subprocess
+import sys
 
 TOOL = 'OYENTE'
 MONGO_COLLECTION = 'contratos'
 PATH_TO_MAIN_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO/'
+dir = '../../tmp/outputs/'
+
+
+def launch(file):
+    file_path = 'tmp/outputs/{}.hex'.format(file)
+    output_file = '../../tmp/outputs/oyente/{}.txt'.format(file)
+    cmd = ['python', 'oyente.py -s {} -b'.format(file_path)]
+    os.chdir(dir)
+    with open(output_file, 'w+') as f:
+        p = subprocess.Popen(cmd=cmd, stdout=f, stderr=f)
+        output, errors = p.communicate()
+        print(output, errors)
 
 
 def main(argv):
-    inputfile = ''
-    outputfile = ''
     try:
         opts, args = getopt.getopt(argv, "hn:", ["contract-name="])
     except getopt.GetoptError:
@@ -23,12 +34,6 @@ def main(argv):
             inputfile = arg
             print('Input file is ', inputfile)
             launch(inputfile)  # El id se pasa al resto de funciones como un INT
-
-
-def launch(file):
-    with open(file, 'w+') as f:
-        p = subprocess.Popen(['oyente.py', "-s {}".format(file)], stdout=f, stderr=f)
-        output, errors = p.communicate()
 
 
 if __name__ == "__main__":
