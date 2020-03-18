@@ -1,24 +1,12 @@
 import constants
+import mdcontracts
+import os
 from test import Contract
-from pymongo import MongoClient
-
-# HOST
-
-TOOL = ['SOLGRAPH', 'OYENTE']
-
-
-def get_contract(id):
-    client = MongoClient("127.0.0.1",
-                         27017)  # OJO! La IP de MongoDB aqui es 127.0.0.1. (Desde dentro de un docker es 172.17.0.1, que es la IP del anfitrion)
-    db = client.my
-    collection = db[constants.MONGO_COLLECTION]
-    cursor = collection.find({'contract_id': id})
-    return cursor.next()
 
 
 def get_content(id):
-    bytecode = get_contract(id)['bytecode']
-    solidity_code = get_contract(id)['solidity']
+    bytecode = mdcontracts.get_contract(id)['bytecode']
+    solidity_code = mdcontracts.get_contract(id)['solidity']
     content = {}
     extensions = []
     if str(bytecode) != '0x':
@@ -49,10 +37,31 @@ def create_contract(id):
     doc_creation(contract)
     return contract
 
-
-def save_results(content, output_file):
-    path_to_output = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + output_file
+# TODO: modificar el dirname, ahora mismo usa el path to main, si se usa una ruta custom que no este dentro del path fallara
+def save_results(content, output_file, tool, parent_dir):
+    os.chdir(parent_dir)
+    if not os.path.exists(tool):
+        os.mkdir(tool)
+    path_to_output = parent_dir + "/{}/{}".format(tool, output_file)
     f = open(path_to_output, "a+")
     f.write(content)
     f.write(constants.SPLIT_BETWEEN_TOOLS)
     f.close()
+    os.chdir(constants.PATH_TO_MAIN_DIRECTORY)
+
+
+def create_settings_file(info):
+    path_to_settings = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/settings.txt'
+    f = open(path_to_settings, "w+")
+    f.write(info)
+    f.close()
+
+
+def create_output_dir(path):
+    if path[-1:] != '/':
+        path += '/'
+    path = constants.PATH_TO_MAIN_DIRECTORY + path
+    if not os.path.exists(path):
+        os.mkdir(path)
+    else:
+        print ("The following path already exits {}.".format(path))
