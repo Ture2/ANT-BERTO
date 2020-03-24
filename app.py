@@ -34,9 +34,6 @@ def init():
         except:
             logger.WARNING("The awaiten docker" + container + "doesn't exits")
 
-# src: str to source file directory
-# dst: str to destiny inside container
-# cname: target container name
 
 def execute_command(type, file, output_file, parent_dir):
     if os.path.isfile(constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + file):
@@ -61,18 +58,6 @@ def execute_command(type, file, output_file, parent_dir):
                     result += line[0].decode('utf-8')
                 dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
 
-def copy_file_to_container(src, dst, cname):
-    os.chdir(os.path.dirname(src))
-    srcname = os.path.basename(src)
-    file = src + '.tar'
-    tar = tarfile.open(file, 'w')
-    try:
-        tar.add(srcname)
-    finally:
-        tar.close()
-        data = open(file, 'rb').read()
-        docker_client.put_archive(cname, os.path.dirname(dst), data)
-        os.remove(file)
 
 def analyze(contract):
     #try:
@@ -99,8 +84,8 @@ def analyze(contract):
 def test():
     c_contracts = mdcontracts.get_all_contract_id()
     for contract in c_contracts:
-        for tool in constants.TOOLS:
-            tool_factory.analyze(tool, contract['contract_id'])
+        c = dependencies_builder.create_contract(contract['contract_id'])
+        analyze(c)
 
 
 def test_sigle_contract(id):

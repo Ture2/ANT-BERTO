@@ -32,15 +32,13 @@ def doc_creation(contract):
         f.close()
 
 
-    if tool.upper() in ['SOLGRAPH']:
-        file_extension = 'sol'
-        content = get_contract(id)['solidity']
-        if type(content) is list:
-            return content[0].get('SourceCode'), file_extension
-    elif tool.upper() in ['OYENTE']:
-        file_extension = 'hex'
-        content = get_contract(id)['bytecode']
-    return content, file_extension
+def create_contract(id):
+    contract = Contract(id)
+    content, ext = get_content(id)
+    contract.set_content(content)
+    contract.set_extensions(ext)
+    doc_creation(contract)
+    return contract
 
 # TODO: modificar el dirname, ahora mismo usa el path to main, si se usa una ruta custom que no este dentro del path fallara
 def save_results(content, output_file, tool, parent_dir):
