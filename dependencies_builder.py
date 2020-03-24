@@ -1,7 +1,10 @@
 import constants
 import mdcontracts
 import os
-from test import Contract
+import logging
+from contract_class import Contract
+
+logger = logging.getLogger(constants.LOGGER_NAME)
 
 
 def get_content(id):
@@ -52,8 +55,9 @@ def save_results(content, output_file, tool, parent_dir):
 
 def create_settings_file(info):
     path_to_settings = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/settings.txt'
-    f = open(path_to_settings, "w+")
-    f.write(info)
+    with open(path_to_settings, "w+") as f:
+        for line in info:
+            f.write(line)
     f.close()
 
 
@@ -63,5 +67,6 @@ def create_output_dir(path):
     path = constants.PATH_TO_MAIN_DIRECTORY + path
     if not os.path.exists(path):
         os.mkdir(path)
+        logger.info('Succesfully output path created -> {}'.format(path))
     else:
-        print ("The following path already exits {}.".format(path))
+        logger.warning('The following path already exits {}.'.format(path))

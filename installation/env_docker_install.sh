@@ -16,7 +16,7 @@ docker pull albeture/ioyente:latest
 
 #starting new instance with mongo dependency install
 
-docker run -i --name=vsolgraph -w "/home" -v $(pwd)/outputs:/tmp/outputs albeture/isolgraph bash < installation/mongodb_install.sh
+docker run -i --name=vsolgraph -w "/home" -v $(pwd)/inputs:/tmp/inputs albeture/isolgraph bash < installation/mongodb_install.sh
 docker run -i --name=vsmartcheck  --volumes-from vsolgraph albeture/ismartcheck bash < installation/mongodb_install.sh
 docker run -i --name=vcontractlarva --volumes-from vsolgraph albeture/icontractlarva bash < installation/mongodb_install.sh
 docker run -i --name=vsolmet --volumes-from vsolgraph albeture/isolmet bash < installation/mongodb_install.sh
@@ -25,4 +25,4 @@ docker run -i --name=vethir --volumes-from vsolgraph albeture/iethir bash < inst
 docker run -i --name=vsecurify --volumes-from vsolgraph albeture/isecurify bash < installation/mongodb_install.sh
 docker run -i --name=vmadmax --volumes-from vsolgraph albeture/imadmax bash < installation/mongodb_install.sh
 docker run -i --name=vosiris --volumes-from vsolgraph albeture/iosiris bash < installation/mongodb_install.sh
-docker run -i --name=voyente -w "/oyente/oyente" --volumes-from vsolgraph albeture/ioyente bash < installation/mongodb_install.sh
+docker run -i --name=voyente -w "/oyente/oyente" -v $(pwd)/inputs:/tmp/inputs albeture/ioyente bash < installation/mongodb_install.sh
