@@ -3,6 +3,8 @@
 Inside installation folder there are multiples files to make the installation process.
 This proyects works with docker and mongodb, so **_it's essential to have installed both tools to following the next steps_**
 
+Install pymongo and docker python libraries into the host
+
 Then run:
 ```
 ./env_docker_install.sh 
