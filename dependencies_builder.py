@@ -12,15 +12,17 @@ def get_content(id):
     solidity_code = mdcontracts.get_contract(id)['solidity']
     content = {}
     extensions = []
+    address = mdcontracts.get_contract(id)['address']
     if str(bytecode) != '0x':
         content['hex'] = str.split(str(bytecode), 'x')[1]
         extensions.append('.hex')
     if type(solidity_code) is list:
         content['sol'] = solidity_code[0].get('SourceCode')
         extensions.append('.sol')
-    return content, extensions
+    return content, extensions, address
 
 
+# Input file creation method
 def doc_creation(contract):
     name = contract.get_name()
     for ext in contract.extensions:
@@ -31,16 +33,18 @@ def doc_creation(contract):
         f.write(content)
         f.close()
 
-
+# Create contract object
 def create_contract(id):
     contract = Contract(id)
-    content, ext = get_content(id)
+    content, ext, address = get_content(id)
     contract.set_content(content)
     contract.set_extensions(ext)
+    contract.set_address(address)
     doc_creation(contract)
     return contract
 
-# TODO: modificar el dirname, ahora mismo usa el path to main, si se usa una ruta custom que no este dentro del path fallara
+
+# Given and output file and parent directory the method save the results
 def save_results(content, output_file, tool, parent_dir):
     os.chdir(parent_dir)
     if not os.path.exists(tool):

@@ -32,53 +32,95 @@ def init():
         try:
             docker_client.start(container)
         except:
-            logger.WARNING("The awaiten docker" + container + "doesn't exits")
+            logger.WARNING("The awaiten docker {} doesn't exits".format(container))
 
 
-def execute_command(type, file, output_file, parent_dir):
-    if os.path.isfile(constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + file):
-        if type == 1:
-            for tool in constants.HEX_TOOLS:
-                cmd = tool.get("cmd").format(file)
-                execution = docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
-                                                      privileged=True)
-                res_iter = docker_client.exec_start(execution, stream=True, demux=True)
-                result = ""
-                for line in res_iter:
-                    result += line[1].decode('utf-8')
-                dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
-        elif type == 0:
-            for tool in constants.SOL_TOOLS:
-                cmd = tool.get("cmd").format(file)
-                execution = docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
-                                                      privileged=True)
-                res_iter = docker_client.exec_start(execution, stream=True, demux=True)
-                result = ""
-                for line in res_iter:
-                    result += line[0].decode('utf-8')
-                dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
+# TODO: continuar desarrollando la funcion intermedia que devuelve todas las ejecuciones que hay que realizar
+def intermediate_exec(tool, cmd):
+    executions = [docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
+                                            privileged=True)]
+    if tool.get("name") == 'solmet':
+        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat output.csv',
+                                                    workdir=tool.get('workdir'),
+                                                    privileged=True))
+    if tool.get("name") == 'ethir':
+        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat rbr.rbr',
+                                                    workdir='/tmp/costabs/',
+                                                    privileged=True))
+    result = ''
+    for exe in executions:
+        res_iter = docker_client.exec_start(exe, stream=True, demux=True)
+        for line in res_iter:
+            if line[0]:
+                result += line[0].decode('utf-8')
+            if line[1]:
+                result += line[1].decode('utf-8')
+            result += '\n'
+    return result
+
+
+'''
+# TODO: funcion que unificará el código entre sol y ex 
+def exec_start(tool, file, type, output_file, parent_dir):
+    result = ""
+    execution_list = []
+    cmd = tool.get("cmd").format(file)
+    execution_list.append(docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
+                                          privileged=True))
+    execution_list.append(intermediate_exec(tool))
+    for exec_instance in execution_list:
+        res_iter = docker_client.exec_start(exec_instance, stream=True, demux=True)
+        if type == 'sol':
+            for line in res_iter:
+                result += line[0].decode('utf-8')
+        else:
+            for line in res_iter:
+                result += line[1].decode('utf-8')
+        dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
+'''
+
+
+def get_tool():
+    for tool in constants.TOOLS_PROPERTIES:
+        if tool.get('name') == constants.SELECTED_TOOL:
+            ret = tool
+    return ret
+
+# Se corren todas las herramientas diferenciando por analisis
+def exec_start(files, output_file, parent_dir, tools):
+    for tool in tools:
+        if tool.get('ext') == '.sol':
+            file = files[0]
+        else:
+            file = files[1]
+        if os.path.isfile(constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + file):
+            cmd = tool.get("cmd").format(file)
+            result = intermediate_exec(tool, cmd)
+            dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
+
+
+def execute_command(files, output_file, parent_dir):
+    if constants.SELECTED_TOOL == 'all':
+        exec_start(files, output_file, parent_dir, constants.TOOLS_PROPERTIES)
+    else:
+        exec_start(files, output_file, parent_dir, [get_tool()])
 
 
 def analyze(contract):
-    #try:
-        input_sol_file = 'input_' + contract.get_name() + '.sol'
-        input_hex_file = 'input_' + contract.get_name() + '.hex'
-        current_time = current_milli_time()
+    # try:
+    input_sol_file = 'input_' + contract.get_name() + '.sol'
+    input_hex_file = 'input_' + contract.get_name() + '.hex'
 
-        parent_dir = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/{}'.format(current_time)
-        os.mkdir(parent_dir)
+    files = [input_sol_file, input_hex_file]
 
-        # TODO: seleccionar archivo
-        # output_file = '{}.txt'.format(current_milli_time())
-        output_file = 'output_{}.txt'.format(contract.get_name())
+    current_time = current_milli_time()
+    address = contract.get_address()
 
-        execute_command(0, input_sol_file, output_file, parent_dir)
-        execute_command(1, input_hex_file, output_file, parent_dir)
+    parent_dir = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/{}_{}'.format(current_time, address)
+    os.mkdir(parent_dir)
+    output_file = 'output_{}.txt'.format(contract.get_name())
 
-        #logger.info('Contract {} successfully analyzed', contract.get_name())
-    #except:
-     #   logger.exception('Exeception analysing a contract')
-
+    execute_command(files, output_file, parent_dir)
 
 
 def test():
@@ -103,13 +145,14 @@ def test_range(*args):
         c = dependencies_builder.create_contract(contract['contract_id'])
         analyze(c)
 
+
 def define_logger():
     logger = logging.getLogger(constants.LOGGER_NAME)
     logger.setLevel(logging.DEBUG)
-    #Log file
+    # Log file
     fh = logging.FileHandler(constants.LOG_FILENAME)
     fh.setLevel(logging.DEBUG)
-    #Console
+    # Console
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)
 
@@ -128,10 +171,14 @@ def main():
     parser.add_argument("-t", "--test", help="Launch default test.",
                         action="store_true")
     parser.add_argument("-uc", "--unique-contract", type=int, help="Analyze the given input contract.")
-    parser.add_argument("-r", "--range", nargs='+', type=int, help="Analyze the given input number range contracts.")
+    parser.add_argument("-r", "--range", nargs='+', type=int,
+                        help="Analyze the given input number range contracts (both included).")
     parser.add_argument("-fn", "--from-number", type=int,
-                        help="Analyze from given input number contract until last one.")
+                        help="Analyze from given input number (included) contract until last one.")
     parser.add_argument("-d", "--directory", type=str, help="Custom output directory.")
+    parser.add_argument("-l", "--list", type=str,
+                        help="Available tools: solgraph, oyente, solmet, smartcheck, osiris, oyente.")
+    parser.add_argument("-s", "--select-tool", type=str, help="Select one specific tool.")
 
     args = parser.parse_args()
     constants.PATH_TO_MAIN_DIRECTORY = os.getcwd() + '/'
@@ -142,6 +189,10 @@ def main():
     init()
 
     try:
+        if args.list:
+            print("Available tools\nSolgraph\nOyente\nSolmet\nSmartcheck\nOsiris\nVandal\n")
+        if args.select_tool and str.lower(args.select_tool) in constants.TOOLS:
+            constants.SELECTED_TOOL = str.lower(args.select_tool)
         if args.directory:
             logger.info('Own output directory selected -> ' + args.directory)
             dependencies_builder.create_output_dir(args.directory)
