@@ -4,7 +4,7 @@ from pymongo import MongoClient
 
 def mongo_connection():
     client = MongoClient("127.0.0.1", 27017)
-    db = client.mydb
+    db = client[constants.MONGO_DATABASE]
     collection = db[constants.MONGO_COLLECTION]
     return collection
 

@@ -3,23 +3,32 @@
 Inside installation folder there are multiples files to make the installation process.
 This proyects works with docker and mongodb, so **_it's essential to have installed both tools to following the next steps_**
 
-Install pymongo and docker python libraries into the host
+Install pymongo and docker python libraries into the host.
+```
+pip install pymongo
+pig install docker
+```
 
-Then run:
+Pull dockers into host running the following command.
 ```
 ./env_docker_install.sh 
 ```
-To pull the differents tool docker images.
 
-Launch the mongodb daemon. To generate mongo db just create a database called "mydb" and into it a collection called "contratos"
+Launch the mongodb daemon. To generate mongo db just create a database called "ant_berto_db" with mongo interpreter:
 ```
-use mydb
-mydb.collection.insertOne( { x: 1 } );
+use ant_berto_db
+```
+Create mongo collection: 
+```
+db.createCollection('ethreum_contracts')
 ```
 
-You can find the ethereum database contract here: 
+To download full database contract: 'SET LINK HERE'
 
-Import the database with the following command:
+Import the dataset into our database with the following command:
 ```
-mongoimport --db my --collection contratos --file contratosexport.json
+mongoimport --db ant_berto_db --collection contracts --file contratosexport.json
 ```
+
+Full command list options:
+

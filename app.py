@@ -82,9 +82,10 @@ def exec_start(tool, file, type, output_file, parent_dir):
 
 def get_tool():
     for tool in constants.TOOLS_PROPERTIES:
-        if tool.get('name') == constants.SELECTED_TOOL:
+        if tool.get('name') == constants.DEFAULT_TOOL:
             ret = tool
     return ret
+
 
 # Se corren todas las herramientas diferenciando por analisis
 def exec_start(files, output_file, parent_dir, tools):
@@ -93,14 +94,14 @@ def exec_start(files, output_file, parent_dir, tools):
             file = files[0]
         else:
             file = files[1]
-        if os.path.isfile(constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + file):
+        if os.path.isfile(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT + file):
             cmd = tool.get("cmd").format(file)
             result = intermediate_exec(tool, cmd)
             dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
 
 
 def execute_command(files, output_file, parent_dir):
-    if constants.SELECTED_TOOL == 'all':
+    if constants.DEFAULT_TOOL == 'all':
         exec_start(files, output_file, parent_dir, constants.TOOLS_PROPERTIES)
     else:
         exec_start(files, output_file, parent_dir, [get_tool()])
@@ -116,7 +117,7 @@ def analyze(contract):
     current_time = current_milli_time()
     address = contract.get_address()
 
-    parent_dir = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/{}_{}'.format(current_time, address)
+    parent_dir = constants.DEFAULT_DIRECTORY + constants.DEFAULT_OUTPUT + '/{}_{}'.format(current_time, address)
     os.mkdir(parent_dir)
     output_file = 'output_{}.txt'.format(contract.get_name())
 
@@ -164,6 +165,8 @@ def define_logger():
     logger.addHandler(ch)
 
 
+# TODO: poner la variables -d para añadir una bbdd o -c para setear el nombre de la coleccion
+# TODO: modificar la lista para poner valores por defecto
 def main():
     define_logger()
     info = []
@@ -181,10 +184,10 @@ def main():
     parser.add_argument("-s", "--select-tool", type=str, help="Select one specific tool.")
 
     args = parser.parse_args()
-    constants.PATH_TO_MAIN_DIRECTORY = os.getcwd() + '/'
+    constants.DEFAULT_DIRECTORY = os.getcwd() + '/'
 
     logger.info('Execution begins')
-    logger.info('Current working directory set to ' + constants.PATH_TO_MAIN_DIRECTORY)
+    logger.info('Current working directory set to ' + constants.DEFAULT_DIRECTORY)
 
     init()
 
@@ -192,11 +195,11 @@ def main():
         if args.list:
             print("Available tools\nSolgraph\nOyente\nSolmet\nSmartcheck\nOsiris\nVandal\n")
         if args.select_tool and str.lower(args.select_tool) in constants.TOOLS:
-            constants.SELECTED_TOOL = str.lower(args.select_tool)
+            constants.DEFAULT_TOOL = str.lower(args.select_tool)
         if args.directory:
             logger.info('Own output directory selected -> ' + args.directory)
             dependencies_builder.create_output_dir(args.directory)
-            constants.PATH_TO_OUTPUT = args.directory
+            constants.DEFAULT_OUTPUT = args.directory
         if args.test and (args.unique_contract is None and args.range is None and args.from_number is None):
             logger.info('Default test selected')
             test()

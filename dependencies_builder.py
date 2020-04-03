@@ -27,7 +27,7 @@ def doc_creation(contract):
     name = contract.get_name()
     for ext in contract.extensions:
         input_file = "input_{}{}".format(name, ext)
-        path_to_input_file = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_INPUT + input_file
+        path_to_input_file = constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT + input_file
         f = open(path_to_input_file, "w+")
         content = contract.get_content_by_extension(str.split(ext, '.')[1])
         f.write(content)
@@ -52,13 +52,13 @@ def save_results(content, output_file, tool, parent_dir):
     path_to_output = parent_dir + "/{}/{}".format(tool, output_file)
     f = open(path_to_output, "a+")
     f.write(content)
-    f.write(constants.SPLIT_BETWEEN_TOOLS)
+    f.write(constants.EOF_STRING)
     f.close()
-    os.chdir(constants.PATH_TO_MAIN_DIRECTORY)
+    os.chdir(constants.DEFAULT_DIRECTORY)
 
 
 def create_settings_file(info):
-    path_to_settings = constants.PATH_TO_MAIN_DIRECTORY + constants.PATH_TO_OUTPUT + '/settings.txt'
+    path_to_settings = constants.DEFAULT_DIRECTORY + constants.DEFAULT_OUTPUT + '/settings.txt'
     with open(path_to_settings, "w+") as f:
         for line in info:
             f.write(line)
@@ -68,7 +68,7 @@ def create_settings_file(info):
 def create_output_dir(path):
     if path[-1:] != '/':
         path += '/'
-    path = constants.PATH_TO_MAIN_DIRECTORY + path
+    path = constants.DEFAULT_DIRECTORY + path
     if not os.path.exists(path):
         os.mkdir(path)
         logger.info('Succesfully output path created -> {}'.format(path))
