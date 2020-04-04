@@ -17,19 +17,19 @@ def get_contract(id):
 
 def get_all_contract_id():
     collection = mongo_connection()
-    c_contracts = collection.find({'contract_id': {"$exists": 'true', "$ne": ""}})
+    c_contracts = collection.find({'contract_id': {"$exists": 'true', "$ne": ""}}, no_cursor_timeout=True)
     return c_contracts
 
 
 def get_range_contract(start_id, end_id):
     collection = mongo_connection()
-    c_contracts = collection.find({'contract_id': {"$gte":  start_id, "$lte": end_id}})
+    c_contracts = collection.find({'contract_id': {"$gte":  start_id, "$lte": end_id}}, no_cursor_timeout=True)
     return c_contracts
 
 
 def get_from_number(start_id):
     collection = mongo_connection()
-    c_contracts = collection.find({'contract_id': {"$gte": start_id}})
+    c_contracts = collection.find({'contract_id': {"$gte": start_id}}, no_cursor_timeout=True)
     return c_contracts
 
 

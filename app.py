@@ -109,6 +109,7 @@ def test():
             dependencies_builder.clean_input_folder()
             logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
         cont = cont + 1
+    c_contracts.close()
 
 
 def test_sigle_contract(id):
@@ -130,6 +131,7 @@ def test_range(*args):
             dependencies_builder.clean_input_folder()
             logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
         cont = cont + 1
+    c_contracts.close()
 
 
 def define_logger():
