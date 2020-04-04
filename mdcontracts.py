@@ -35,7 +35,7 @@ def get_from_number(start_id):
 
 def insert_result(id, field, value):
     collection = mongo_connection()
-    query = { "contract_id": id}
+    query = {'contract_id': id}
     new_values = {"$addToSet": {"results": {"{}".format(field): "{}".format(value)}}}
     collection.update(query, new_values, upsert=False)
 

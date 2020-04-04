@@ -1,4 +1,4 @@
-MONGO_DATABASE = 'my'
+MONGO_DATABASE = 'mydb'
 MONGO_COLLECTION = 'contratos_full'
 DEFAULT_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO'
 DEFAULT_INPUT = '/inputs'
