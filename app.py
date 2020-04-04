@@ -73,7 +73,7 @@ def exec_start(files, id, tools):
             file = files[0]
         else:
             file = files[1]
-        if os.path.isfile(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT + file):
+        if os.path.isfile(os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, file)):
             cmd = tool.get("cmd").format(file)
             logger.info("Running {} ...".format(tool.get('name')))
             result = intermediate_exec(tool, cmd)
