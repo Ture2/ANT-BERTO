@@ -32,3 +32,16 @@ def get_from_number(start_id):
     c_contracts = collection.find({'contract_id': {"$gte": start_id}})
     return c_contracts
 
+
+def insert_result(id, field, value):
+    collection = mongo_connection()
+    query = { "contract_id": id}
+    new_values = {"$addToSet": {"results": {"{}".format(field): "{}".format(value)}}}
+    collection.update(query, new_values, upsert=False)
+
+
+def remove_result(id):
+    collection = mongo_connection()
+    query = {"contract_id": id}
+    remove_values = {"$unset": {"results": ""}}
+    collection.update(query, remove_values)

@@ -32,3 +32,6 @@ class Contract:
     def set_address(self, address):
         self.address = address
 
+    def get_id(self):
+        return self.id
+

@@ -1,8 +1,8 @@
 MONGO_DATABASE = 'my'
 MONGO_COLLECTION = 'contratos_full'
-DEFAULT_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO/'
-DEFAULT_INPUT = '/inputs/'
-DEFAULT_OUTPUT = '/outputs/'
+DEFAULT_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO'
+DEFAULT_INPUT = '/inputs'
+DEFAULT_OUTPUT = '/outputs'
 DEFAULT_TOOL = 'all'
 LOG_FILENAME = 'stack_trace.log'
 LOGGER_NAME = 'Default_logger'
@@ -10,7 +10,7 @@ LOGGER_NAME = 'Default_logger'
 EOF_STRING = '---!!!---'
 
 TOOLS = ['solgraph', 'oyente', 'smartcheck', 'solmet', 'osiris', 'vandal', 'ethir']
-CONTAINERS = ['vsolgraph', 'voyente', 'vsolmet', 'vethir', 'vosiris', 'vvandal']
+CONTAINERS = ['vsolgraph', 'voyente', 'vsolmet', 'vethir', 'vosiris', 'vvandal', 'vsmartcheck']
 
 
 TOOLS_PROPERTIES = [

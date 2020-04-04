@@ -1,3 +1,5 @@
+import shutil
+
 import constants
 import mdcontracts
 import os
@@ -27,11 +29,12 @@ def doc_creation(contract):
     name = contract.get_name()
     for ext in contract.extensions:
         input_file = "input_{}{}".format(name, ext)
-        path_to_input_file = constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT + input_file
+        path_to_input_file = os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, input_file)
         f = open(path_to_input_file, "w+")
         content = contract.get_content_by_extension(str.split(ext, '.')[1])
         f.write(content)
         f.close()
+
 
 # Create contract object
 def create_contract(id):
@@ -43,9 +46,9 @@ def create_contract(id):
     doc_creation(contract)
     return contract
 
-
+'''
 # Given and output file and parent directory the method save the results
-def save_results(content, output_file, tool, parent_dir):
+def save_results(content, id, tool):
     os.chdir(parent_dir)
     if not os.path.exists(tool):
         os.mkdir(tool)
@@ -55,6 +58,7 @@ def save_results(content, output_file, tool, parent_dir):
     f.write(constants.EOF_STRING)
     f.close()
     os.chdir(constants.DEFAULT_DIRECTORY)
+    '''
 
 
 def create_settings_file(info):
@@ -74,3 +78,16 @@ def create_output_dir(path):
         logger.info('Succesfully output path created -> {}'.format(path))
     else:
         logger.warning('The following path already exits {}.'.format(path))
+
+
+def clean_input_folder():
+    path = constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            logger.exception('Failed to delete %s. Reason: %s' % (file_path, e))

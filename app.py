@@ -12,7 +12,7 @@ from pathlib import Path
 
 # HOST
 
-VERSION = 0.2
+VERSION = 0.3
 
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -59,27 +59,6 @@ def intermediate_exec(tool, cmd):
     return result
 
 
-'''
-# TODO: funcion que unificará el código entre sol y ex 
-def exec_start(tool, file, type, output_file, parent_dir):
-    result = ""
-    execution_list = []
-    cmd = tool.get("cmd").format(file)
-    execution_list.append(docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
-                                          privileged=True))
-    execution_list.append(intermediate_exec(tool))
-    for exec_instance in execution_list:
-        res_iter = docker_client.exec_start(exec_instance, stream=True, demux=True)
-        if type == 'sol':
-            for line in res_iter:
-                result += line[0].decode('utf-8')
-        else:
-            for line in res_iter:
-                result += line[1].decode('utf-8')
-        dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
-'''
-
-
 def get_tool():
     for tool in constants.TOOLS_PROPERTIES:
         if tool.get('name') == constants.DEFAULT_TOOL:
@@ -88,7 +67,7 @@ def get_tool():
 
 
 # Se corren todas las herramientas diferenciando por analisis
-def exec_start(files, output_file, parent_dir, tools):
+def exec_start(files, id, tools):
     for tool in tools:
         if tool.get('ext') == '.sol':
             file = files[0]
@@ -96,39 +75,40 @@ def exec_start(files, output_file, parent_dir, tools):
             file = files[1]
         if os.path.isfile(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT + file):
             cmd = tool.get("cmd").format(file)
+            logger.info("Running {} ...".format(tool.get('name')))
             result = intermediate_exec(tool, cmd)
-            dependencies_builder.save_results(result, output_file, tool.get('name'), parent_dir)
+            logger.info("Completed. Saving results...")
+            mdcontracts.insert_result(id, tool.get('name'),result)
+            logger.info("Completed.")
 
 
-def execute_command(files, output_file, parent_dir):
+def execute_command(files, id):
     if constants.DEFAULT_TOOL == 'all':
-        exec_start(files, output_file, parent_dir, constants.TOOLS_PROPERTIES)
+        exec_start(files, id, constants.TOOLS_PROPERTIES)
     else:
-        exec_start(files, output_file, parent_dir, [get_tool()])
+        exec_start(files, id, [get_tool()])
 
 
 def analyze(contract):
-    # try:
     input_sol_file = 'input_' + contract.get_name() + '.sol'
     input_hex_file = 'input_' + contract.get_name() + '.hex'
 
     files = [input_sol_file, input_hex_file]
-
-    current_time = current_milli_time()
-    address = contract.get_address()
-
-    parent_dir = constants.DEFAULT_DIRECTORY + constants.DEFAULT_OUTPUT + '/{}_{}'.format(current_time, address)
-    os.mkdir(parent_dir)
-    output_file = 'output_{}.txt'.format(contract.get_name())
-
-    execute_command(files, output_file, parent_dir)
+    logger.info("Analyzing contract number {}".format(contract.get_id()))
+    execute_command(files, contract.get_id())
+    logger.info("{} contract analyze ended.".format(contract.get_id()))
 
 
 def test():
+    cont = 1
     c_contracts = mdcontracts.get_all_contract_id()
     for contract in c_contracts:
         c = dependencies_builder.create_contract(contract['contract_id'])
         analyze(c)
+        if (cont % 50 ) == 0:
+            dependencies_builder.clean_input_folder()
+            logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
+        cont = cont + 1
 
 
 def test_sigle_contract(id):
@@ -138,6 +118,7 @@ def test_sigle_contract(id):
 
 
 def test_range(*args):
+    cont = 1
     if len(args) == 2:
         c_contracts = mdcontracts.get_range_contract(args[0], args[1])
     else:
@@ -145,6 +126,10 @@ def test_range(*args):
     for contract in c_contracts:
         c = dependencies_builder.create_contract(contract['contract_id'])
         analyze(c)
+        if (cont % 50 ) == 0:
+            dependencies_builder.clean_input_folder()
+            logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
+        cont = cont + 1
 
 
 def define_logger():
@@ -204,7 +189,7 @@ def main():
             logger.info('Default test selected')
             test()
         elif args.unique_contract:
-            logger.info('Unique contract test selected. Contract number {}\n'.format(args.unique_contract))
+            logger.info('Unique contract test selected. Contract number {}'.format(args.unique_contract))
             test_sigle_contract(args.unique_contract)
         elif args.range:
             if args.range[0] < 0 or args.range[1] < 0:
@@ -212,13 +197,13 @@ def main():
             elif (isinstance(args.range[0], int) or isinstance(args.range[1], int)) is not True:
                 raise exceptions.InputError('parser', 'The range must be a number')
             else:
-                logger.info('Range test selected. Range: {} - {}\n'.format(args.range[0], args.range[1]))
+                logger.info('Range test selected. Range: {} - {}'.format(args.range[0], args.range[1]))
                 test_range(args.range[0], args.range[1])
         elif args.from_number:
             if args.from_number < 0 or isinstance(args.from_number, int) is not True:
                 raise exceptions.InputError('parser', 'The range must be a number and higher than 0')
             else:
-                logger.info('Range from number selected. Range: {} - end\n'.format(args.from_number))
+                logger.info('Range from number selected. Range: {} - end'.format(args.from_number))
                 test_range(args.from_number)
         else:
             raise exceptions.InputError('You must select a value')
