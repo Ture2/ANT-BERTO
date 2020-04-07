@@ -7,6 +7,7 @@ import mdcontracts
 import docker
 import exceptions
 import logging
+from multiprocessing import Process, Lock
 
 from pathlib import Path
 
@@ -89,6 +90,7 @@ def execute_command(files, id):
         exec_start(files, id, [get_tool()])
 
 
+
 def analyze(contract):
     input_sol_file = 'input_' + contract.get_name() + '.sol'
     input_hex_file = 'input_' + contract.get_name() + '.hex'
@@ -97,7 +99,6 @@ def analyze(contract):
     logger.info("Analyzing contract number {}".format(contract.get_id()))
     execute_command(files, contract.get_id())
     logger.info("{} contract analyze ended.".format(contract.get_id()))
-
 
 def test():
     cont = 1
@@ -118,20 +119,26 @@ def test_sigle_contract(id):
     analyze(c)
 
 
+
+
 def test_range(*args):
+    processes = []
     cont = 1
     if len(args) == 2:
-        c_contracts = mdcontracts.get_range_contract(args[0], args[1])
+        lengh = args[1] - args[0]
     else:
-        c_contracts = mdcontracts.get_from_number(args[0])
-    for contract in c_contracts:
-        c = dependencies_builder.create_contract(contract['contract_id'])
+        lengh = 100000 - args[0]
+    for i in range(0, lengh):
+        if i % 100 == 0:
+            update_count = 100 * (i / 100)
+            c_contracts = mdcontracts.get_range_contract(args[0] + update_count, args[1] + update_count)
+        c = dependencies_builder.create_contract(c_contracts.next()['contract_id'])
         analyze(c)
         if (cont % 50 ) == 0:
             dependencies_builder.clean_input_folder()
             logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
         cont = cont + 1
-    c_contracts.close()
+
 
 
 def define_logger():
