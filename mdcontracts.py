@@ -18,7 +18,7 @@ def get_contract(id):
 def get_all_contract_id():
     collection = mongo_connection()
     c_contracts = collection.find({'contract_id': {"$exists": 'true', "$ne": ""}}, no_cursor_timeout=True)
-    return c_contracts.time
+    return c_contracts
 
 
 def get_range_contract(start_id, end_id):

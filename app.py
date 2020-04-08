@@ -79,7 +79,7 @@ def exec_start(files, id, tools):
             logger.info("Running {} ...".format(tool.get('name')))
             result = intermediate_exec(tool, cmd)
             logger.info("Completed. Saving results...")
-            mdcontracts.insert_result(id, tool.get('name'),result)
+            mdcontracts.insert_result(id, tool.get('name'), result)
             logger.info("Completed.")
 
 
@@ -88,7 +88,6 @@ def execute_command(files, id):
         exec_start(files, id, constants.TOOLS_PROPERTIES)
     else:
         exec_start(files, id, [get_tool()])
-
 
 
 def analyze(contract):
@@ -100,13 +99,14 @@ def analyze(contract):
     execute_command(files, contract.get_id())
     logger.info("{} contract analyze ended.".format(contract.get_id()))
 
+
 def test():
     cont = 1
     c_contracts = mdcontracts.get_all_contract_id()
     for contract in c_contracts:
         c = dependencies_builder.create_contract(contract['contract_id'])
         analyze(c)
-        if (cont % 50 ) == 0:
+        if (cont % 50) == 0:
             dependencies_builder.clean_input_folder()
             logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
         cont = cont + 1
@@ -117,8 +117,6 @@ def test_sigle_contract(id):
     contract = mdcontracts.get_contract(id)
     c = dependencies_builder.create_contract(contract['contract_id'])
     analyze(c)
-
-
 
 
 def test_range(*args):
@@ -132,13 +130,13 @@ def test_range(*args):
         if i % 100 == 0:
             update_count = 100 * (i / 100)
             c_contracts = mdcontracts.get_range_contract(args[0] + update_count, args[1] + update_count)
-        c = dependencies_builder.create_contract(c_contracts.next()['contract_id'])
+        id = c_contracts.next()['contract_id']
+        c = dependencies_builder.create_contract(id)
         analyze(c)
-        if (cont % 50 ) == 0:
+        if (cont % 50) == 0:
             dependencies_builder.clean_input_folder()
             logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
         cont = cont + 1
-
 
 
 def define_logger():
