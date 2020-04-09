@@ -23,6 +23,7 @@ Create mongo collection:
 db.createCollection('ethreum_contracts')
 ```
 
+Repeat the process creating another database called 'store_results' and also a new collection called 'results'
 To download full database contract: 'SET LINK HERE'
 
 Import the dataset into our database with the following command:

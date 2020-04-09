@@ -8,6 +8,12 @@ def mongo_connection():
     collection = db[constants.MONGO_COLLECTION]
     return collection
 
+def mongo_results_connection():
+    client = MongoClient("127.0.0.1", 27017)
+    db = client[constants.MONGO_RESULTS_DATABASE]
+    collection = db[constants.MONGO_RESULTS_COLLECTION]
+    return collection
+
 
 def get_contract(id):
     collection = mongo_connection()
@@ -34,10 +40,11 @@ def get_from_number(start_id):
 
 
 def insert_result(id, field, value):
-    collection = mongo_connection()
+    collection = mongo_results_connection()
     query = {'contract_id': id}
-    new_values = {"$addToSet": {"results": {"{}".format(field): "{}".format(value)}}}
-    collection.update(query, new_values, upsert=False)
+    new_values = {"$set": {"{}".format(field): "{}".format(value)}, "$setOnInsert": {"id": id}}
+    collection.update(query, new_values, upsert=True)
+
 
 
 def remove_result(id):

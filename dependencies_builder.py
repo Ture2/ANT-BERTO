@@ -1,5 +1,4 @@
 import shutil
-
 import constants
 import mdcontracts
 import os
@@ -46,19 +45,12 @@ def create_contract(id):
     doc_creation(contract)
     return contract
 
-'''
-# Given and output file and parent directory the method save the results
-def save_results(content, id, tool):
-    os.chdir(parent_dir)
-    if not os.path.exists(tool):
-        os.mkdir(tool)
-    path_to_output = parent_dir + "/{}/{}".format(tool, output_file)
-    f = open(path_to_output, "a+")
-    f.write(content)
-    f.write(constants.EOF_STRING)
-    f.close()
-    os.chdir(constants.DEFAULT_DIRECTORY)
-    '''
+
+def get_version(path):
+    with open(path, "r+") as f:
+        line = f.readline()
+        version = str.split(line.replace("pragma solidity ", ""), ';')[0]
+    return version
 
 
 def create_settings_file(info):
@@ -72,7 +64,10 @@ def create_settings_file(info):
 def create_output_dir(path):
     if path[-1:] != '/':
         path += '/'
+    if path[:0] != '/':
+        path = '/' + path
     path = constants.DEFAULT_DIRECTORY + path
+    constants.DEFAULT_OUTPUT = path
     if not os.path.exists(path):
         os.mkdir(path)
         logger.info('Succesfully output path created -> {}'.format(path))

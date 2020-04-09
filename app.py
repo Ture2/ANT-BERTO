@@ -13,7 +13,7 @@ from pathlib import Path
 
 # HOST
 
-VERSION = 0.3
+VERSION = 0.4
 
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -37,7 +37,17 @@ def init():
 
 
 # TODO: continuar desarrollando la funcion intermedia que devuelve todas las ejecuciones que hay que realizar
-def intermediate_exec(tool, cmd):
+def intermediate_exec(tool, cmd, version):
+    version = int(version.replace(".", ""))
+    if tool.get("name") == 'securify' and version <= 510:
+        return ''
+    if tool.get("name") == 'slither':
+        if version <= 430:
+            cmd.format(version)
+        else:
+            return ''
+
+
     executions = [docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
                                             privileged=True)]
     if tool.get("name") == 'solmet':
@@ -67,6 +77,13 @@ def get_tool():
     return ret
 
 
+def get_version(tool, path):
+    if tool.get('ext') == '.sol':
+        return dependencies_builder.get_version(path)
+    else:
+        return ''
+
+
 # Se corren todas las herramientas diferenciando por analisis
 def exec_start(files, id, tools):
     for tool in tools:
@@ -74,10 +91,17 @@ def exec_start(files, id, tools):
             file = files[0]
         else:
             file = files[1]
-        if os.path.isfile(os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, file)):
-            cmd = tool.get("cmd").format(file)
+        path = os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, file)
+        if os.path.isfile(path):
+            version = get_version(tool, path)
+            if tool.get('name') == 'mythril' :
+                cmd = tool.get("cmd").format(version, file)
+            elif tool.get("name") == 'slither':
+                cmd = tool.get("cmd").format(constants.SOLC_SLITHER.format(version), file)
+            else:
+                cmd = tool.get("cmd").format(file)
             logger.info("Running {} ...".format(tool.get('name')))
-            result = intermediate_exec(tool, cmd)
+            result = intermediate_exec(tool, cmd, version)
             logger.info("Completed. Saving results...")
             mdcontracts.insert_result(id, tool.get('name'), result)
             logger.info("Completed.")
@@ -176,7 +200,7 @@ def main():
     parser.add_argument("-s", "--select-tool", type=str, help="Select one specific tool.")
 
     args = parser.parse_args()
-    constants.DEFAULT_DIRECTORY = os.getcwd() + '/'
+    constants.DEFAULT_DIRECTORY = os.getcwd()
 
     logger.info('Execution begins')
     logger.info('Current working directory set to ' + constants.DEFAULT_DIRECTORY)
@@ -191,7 +215,6 @@ def main():
         if args.directory:
             logger.info('Own output directory selected -> ' + args.directory)
             dependencies_builder.create_output_dir(args.directory)
-            constants.DEFAULT_OUTPUT = args.directory
         if args.test and (args.unique_contract is None and args.range is None and args.from_number is None):
             logger.info('Default test selected')
             test()
@@ -216,8 +239,6 @@ def main():
             raise exceptions.InputError('You must select a value')
     except:
         logger.exception('Got exception parsing arguments')
-    finally:
-        dependencies_builder.create_settings_file(info)
 
 
 if __name__ == "__main__":
