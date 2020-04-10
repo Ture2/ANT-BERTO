@@ -53,14 +53,6 @@ def get_version(path):
     return version
 
 
-def create_settings_file(info):
-    path_to_settings = constants.DEFAULT_DIRECTORY + constants.DEFAULT_OUTPUT + '/settings.txt'
-    with open(path_to_settings, "w+") as f:
-        for line in info:
-            f.write(line)
-    f.close()
-
-
 def create_output_dir(path):
     if path[-1:] != '/':
         path += '/'

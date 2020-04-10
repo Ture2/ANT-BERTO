@@ -13,7 +13,7 @@ from pathlib import Path
 
 # HOST
 
-VERSION = 0.4
+VERSION = 0.5
 
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -38,15 +38,15 @@ def init():
 
 # TODO: continuar desarrollando la funcion intermedia que devuelve todas las ejecuciones que hay que realizar
 def intermediate_exec(tool, cmd, version):
-    version = int(version.replace(".", ""))
+    if version != '':
+        version = int(version.replace(".", ""))
     if tool.get("name") == 'securify' and version <= 510:
         return ''
-    if tool.get("name") == 'slither':
+    if tool.get("name") == 'slither' and version <= 430:
         if version <= 430:
             cmd.format(version)
         else:
             return ''
-
 
     executions = [docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
                                             privileged=True)]
@@ -58,6 +58,11 @@ def intermediate_exec(tool, cmd, version):
         executions.append(docker_client.exec_create(tool.get('container'), cmd='cat rbr.rbr',
                                                     workdir='/tmp/costabs/',
                                                     privileged=True))
+    if tool.get("name") == 'madmax':
+        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat graph.html',
+                                                    workdir='/home/MadMax/',
+                                                    privileged=True))
+
     result = ''
     for exe in executions:
         res_iter = docker_client.exec_start(exe, stream=True, demux=True)
@@ -100,11 +105,11 @@ def exec_start(files, id, tools):
                 cmd = tool.get("cmd").format(constants.SOLC_SLITHER.format(version), file)
             else:
                 cmd = tool.get("cmd").format(file)
-            logger.info("Running {} ...".format(tool.get('name')))
+            logger.debug("Running {} ...".format(tool.get('name')))
             result = intermediate_exec(tool, cmd, version)
-            logger.info("Completed. Saving results...")
+            logger.debug("Completed. Saving results...")
             mdcontracts.insert_result(id, tool.get('name'), result)
-            logger.info("Completed.")
+            logger.debug("Completed.")
 
 
 def execute_command(files, id):
@@ -115,13 +120,16 @@ def execute_command(files, id):
 
 
 def analyze(contract):
-    input_sol_file = 'input_' + contract.get_name() + '.sol'
-    input_hex_file = 'input_' + contract.get_name() + '.hex'
+    try:
+        input_sol_file = 'input_' + contract.get_name() + '.sol'
+        input_hex_file = 'input_' + contract.get_name() + '.hex'
 
-    files = [input_sol_file, input_hex_file]
-    logger.info("Analyzing contract number {}".format(contract.get_id()))
-    execute_command(files, contract.get_id())
-    logger.info("{} contract analyze ended.".format(contract.get_id()))
+        files = [input_sol_file, input_hex_file]
+        logger.info("Analyzing contract number {}".format(contract.get_id()))
+        execute_command(files, contract.get_id())
+        logger.info("{} contract analyze ended.".format(contract.get_id()))
+    except:
+        logger.exception("Get exception analyzing contract id: {}".format(contract.get_id()))
 
 
 def test():
@@ -151,16 +159,17 @@ def test_range(*args):
     else:
         lengh = 100000 - args[0]
     for i in range(0, lengh):
-        if i % 100 == 0:
-            update_count = 100 * (i / 100)
-            c_contracts = mdcontracts.get_range_contract(args[0] + update_count, args[1] + update_count)
-        id = c_contracts.next()['contract_id']
-        c = dependencies_builder.create_contract(id)
-        analyze(c)
-        if (cont % 50) == 0:
-            dependencies_builder.clean_input_folder()
-            logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
-        cont = cont + 1
+            if i % 100 == 0:
+                update_count = 100 * (i / 100)
+                c_contracts = mdcontracts.get_range_contract(args[0] + update_count, args[1] + update_count)
+            id = c_contracts.next()['contract_id']
+            c = dependencies_builder.create_contract(id)
+            analyze(c)
+            if (cont % 50) == 0:
+                dependencies_builder.clean_input_folder()
+                logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
+            cont = cont + 1
+
 
 
 def define_logger():
@@ -171,7 +180,7 @@ def define_logger():
     fh.setLevel(logging.DEBUG)
     # Console
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.INFO)
 
     formater = logging.Formatter('%(asctime)s %(message)s', datefmt='%d/%m/%Y %I:%M:%S %p')
 
@@ -196,7 +205,8 @@ def main():
                         help="Analyze from given input number (included) contract until last one.")
     parser.add_argument("-d", "--directory", type=str, help="Custom output directory.")
     parser.add_argument("-l", "--list", type=str,
-                        help="Available tools: solgraph, oyente, solmet, smartcheck, osiris, oyente.")
+                        help="Available tools: solgraph, oyente, smartcheck, solmet, osiris, vandal, ethir, mythril,"
+                             "securify, slither, manticore, madmax")
     parser.add_argument("-s", "--select-tool", type=str, help="Select one specific tool.")
 
     args = parser.parse_args()

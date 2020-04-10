@@ -6,7 +6,7 @@ This proyects works with docker and mongodb, so **_it's essential to have instal
 Install pymongo and docker python libraries into the host.
 ```
 pip install pymongo
-pig install docker
+pip install docker
 ```
 
 Pull dockers into host running the following command.
