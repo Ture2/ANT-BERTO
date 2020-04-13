@@ -2,45 +2,66 @@
 
 #imagenes: completed
 
-docker commit solgraph isolgraph
-docker commit smartcheck ismartcheck
-docker commit contractlarva icontractlarva
-docker commit solmet isolmet
-docker commit vandal ivandal
-docker commit ethir iethir
-docker commit rattle irattle
-docker commit securify isecurify
-docker commit madmax imadmax
-docker commit youthful_chatterjee iosiris
-docker commit frosty_booth ioyente
+docker commit vsmartcheck ismartcheck
+docker commit vsolmet isolmet
+docker commit vvandal ivandal
+docker commit vethir iethir
+docker commit vsecurify isecurify
+docker commit vmadmax imadmax
+docker commit vosiris iosiris
+docker commit vmanticore imanticore
+docker commit vslither islither
+docker commit vsolgraph isolgraph
+docker commit vmythril imythril
+docker commit voyente ioyente
+
 
 docker image tag isolgraph:latest albeture/isolgraph:latest
 docker image tag ismartcheck:latest albeture/ismartcheck:latest
-docker image tag icontractlarva:latest albeture/icontractlarva:latest
 docker image tag isolmet:latest albeture/isolmet:latest
 docker image tag ivandal:latest albeture/ivandal:latest
 docker image tag iethir:latest albeture/iethir:latest
-docker image tag irattle:latest albeture/irattle:latest
 docker image tag isecurify:latest albeture/isecurify:latest
 docker image tag imadmax:latest albeture/imadmax:latest
 docker image tag iosiris:latest albeture/iosiris:latest
 docker image tag ioyente:latest albeture/ioyente:latest
+docker image tag imythril:latest albeture/imytrhil:latest
+docker image tag islither:latest albeture/islither:latest
+docker image tag imanticore:latest albeture/imanticore:latest
+
+
+docker push albeture/isolgraph:latest
+docker push albeture/ismartcheck:latest
+docker push albeture/isolmet:latest
+docker push albeture/ivandal:latest
+docker push albeture/iethir:latest
+docker push albeture/isecurify:latest
+docker push albeture/imadmax:latest
+docker push albeture/iosiris:latest
+docker push albeture/ioyente:latest
+docker push albeture/imytrhil:latest
+docker push albeture/islither:latest
+docker push albeture/imanticore:latest
+
+
 
 #Starting enviroment from here
 
 docker pull albeture/isolgraph:latest
 docker pull albeture/ismartcheck:latest
-docker pull albeture/icontractlarva:latest
 docker pull albeture/isolmet:latest
 docker pull albeture/ivandal:latest
 docker pull albeture/iethir:latest
-docker pull albeture/irattle:latest
 docker pull albeture/isecurify:latest
 docker pull albeture/imadmax:latest
 docker pull albeture/iosiris:latest
 docker pull albeture/ioyente:latest
+docker pull albeture/imytrhil:latest
+docker pull albeture/islither:latest
+docker pull albeture/imanticore:latest
 
 #añadir dependencias mongo: 
+
 
 
 
@@ -58,25 +79,3 @@ docker run -i --name=vsecurify --volumen-from vsolgraph isecurify bash < mongodb
 docker run -i --name=vmadmax --volumen-from vsolgraph imadmax bash < mongodb_install.sh
 docker run -i --name=vosiris --volumen-from vsolgraph iosiris bash < mongodb_install.sh
 docker run -i --name=voyente --volumen-from vsolgraph ioyente bash < mongodb_install.sh
-
-docker start vsolgraph
-docker start vsmartcheck
-docker start vcontractlarva
-docker start vsolmet
-docker start vvandal
-docker start vethir
-docker start vsecurify
-docker start vmadmax
-docker start vosiris
-docker start voyente
-
-#ejecutar los test en cada herramienta redirigiendo la entrada
-
-
-#guardar los resultados dentro del volumen comun 
-
-#sacar esos datos al host maestro o analizador
-
-	#analizador en python
-
-#devolver un único archivo

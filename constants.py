@@ -1,7 +1,7 @@
 MONGO_DATABASE = 'mydb'
 MONGO_COLLECTION = 'contratos_full'
 MONGO_RESULTS_DATABASE = 'results_db'
-MONGO_RESULTS_COLLECTION = 'outputs'
+MONGO_RESULTS_COLLECTION = 'outputs_full'
 DEFAULT_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO'
 DEFAULT_INPUT = '/inputs'
 DEFAULT_OUTPUT = '/outputs'

@@ -165,9 +165,9 @@ def test_range(*args):
             id = c_contracts.next()['contract_id']
             c = dependencies_builder.create_contract(id)
             analyze(c)
-            if (cont % 50) == 0:
-                dependencies_builder.clean_input_folder()
-                logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
+            #if (cont % 50) == 0:
+            #    dependencies_builder.clean_input_folder()
+            #logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
             cont = cont + 1
 
 
