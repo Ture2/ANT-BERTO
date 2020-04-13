@@ -90,7 +90,7 @@ def get_version(tool, path):
 
 
 # Se corren todas las herramientas diferenciando por analisis
-def exec_start(files, id, tools):
+def exec_start(files, contract, tools):
     for tool in tools:
         if tool.get('ext') == '.sol':
             file = files[0]
@@ -108,15 +108,15 @@ def exec_start(files, id, tools):
             logger.debug("Running {} ...".format(tool.get('name')))
             result = intermediate_exec(tool, cmd, version)
             logger.debug("Completed. Saving results...")
-            mdcontracts.insert_result(id, tool.get('name'), result)
+            mdcontracts.insert_result(contract.get_id(), contract.get_address(), tool.get('name'), result)
             logger.debug("Completed.")
 
 
-def execute_command(files, id):
+def execute_command(files, contract):
     if constants.DEFAULT_TOOL == 'all':
-        exec_start(files, id, constants.TOOLS_PROPERTIES)
+        exec_start(files, contract, constants.TOOLS_PROPERTIES)
     else:
-        exec_start(files, id, [get_tool()])
+        exec_start(files, contract, [get_tool()])
 
 
 def analyze(contract):
@@ -126,7 +126,7 @@ def analyze(contract):
 
         files = [input_sol_file, input_hex_file]
         logger.info("Analyzing contract number {}".format(contract.get_id()))
-        execute_command(files, contract.get_id())
+        execute_command(files, contract)
         logger.info("{} contract analyze ended.".format(contract.get_id()))
     except:
         logger.exception("Get exception analyzing contract id: {}".format(contract.get_id()))
