@@ -40,10 +40,10 @@ def get_from_number(start_id):
     return c_contracts
 
 
-def insert_result(id, address, field, value):
+def insert_result(id, address, field, value, time_elapsed):
     collection = mongo_results_connection()
     query = {'contract_id': id}
-    new_values = {"$addToSet": {"results": {"{}".format(field): "{}".format(value)}},
+    new_values = {"$set": {"{}".format(field): {"output": "{}".format(value), "time_elapsed": time_elapsed}},
                   "$setOnInsert": {"contract_id": id, "address": address}}
     collection.update(query, new_values, upsert=True)
 

@@ -7,6 +7,7 @@ import mdcontracts
 import docker
 import exceptions
 import logging
+import app_engine
 from multiprocessing import Process, Lock
 
 from pathlib import Path
@@ -16,107 +17,7 @@ from pathlib import Path
 VERSION = 0.5
 
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
-current_milli_time = lambda: int(round(time.time() * 1000))
 logger = logging.getLogger(constants.LOGGER_NAME)
-
-
-def init():
-    containers_running = docker_client.containers(all=True)
-    final_name_list = list()
-
-    for c in containers_running:
-        name_list = c['Names']
-        if len(name_list) > 0:
-            final_name_list += name_list
-
-    for container in constants.CONTAINERS:
-        try:
-            docker_client.start(container)
-        except:
-            logger.WARNING("The awaiten docker {} doesn't exits".format(container))
-
-
-# TODO: continuar desarrollando la funcion intermedia que devuelve todas las ejecuciones que hay que realizar
-def intermediate_exec(tool, cmd, version):
-    if version != '':
-        version = int(version.replace(".", ""))
-    if tool.get("name") == 'securify' and version <= 510:
-        return ''
-    if tool.get("name") == 'slither' and version <= 430:
-        if version <= 430:
-            cmd.format(version)
-        else:
-            return ''
-
-    executions = [docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
-                                            privileged=True)]
-    if tool.get("name") == 'solmet':
-        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat output.csv',
-                                                    workdir=tool.get('workdir'),
-                                                    privileged=True))
-    if tool.get("name") == 'ethir':
-        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat rbr.rbr',
-                                                    workdir='/tmp/costabs/',
-                                                    privileged=True))
-    if tool.get("name") == 'madmax':
-        executions.append(docker_client.exec_create(tool.get('container'), cmd='cat graph.html',
-                                                    workdir='/home/MadMax/',
-                                                    privileged=True))
-
-    result = ''
-    for exe in executions:
-        res_iter = docker_client.exec_start(exe, stream=True, demux=True)
-        for line in res_iter:
-            if line[0]:
-                result += line[0].decode('utf-8')
-            if line[1]:
-                result += line[1].decode('utf-8')
-            result += '\n'
-    return result
-
-
-def get_tool():
-    for tool in constants.TOOLS_PROPERTIES:
-        if tool.get('name') == constants.DEFAULT_TOOL:
-            ret = tool
-    return ret
-
-
-def get_version(tool, path):
-    if tool.get('ext') == '.sol':
-        return dependencies_builder.get_version(path)
-    else:
-        return ''
-
-
-# Se corren todas las herramientas diferenciando por analisis
-def exec_start(files, contract, tools):
-    for tool in tools:
-        if tool.get('ext') == '.sol':
-            file = files[0]
-        else:
-            file = files[1]
-        path = os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, file)
-        if os.path.isfile(path):
-            version = get_version(tool, path)
-            if tool.get('name') == 'mythril' :
-                cmd = tool.get("cmd").format(version, file)
-            elif tool.get("name") == 'slither':
-                cmd = tool.get("cmd").format(constants.SOLC_SLITHER.format(version), file)
-            else:
-                cmd = tool.get("cmd").format(file)
-            logger.debug("Running {} ...".format(tool.get('name')))
-            result = intermediate_exec(tool, cmd, version)
-            logger.debug("Completed. Saving results...")
-            mdcontracts.insert_result(contract.get_id(), contract.get_address(), tool.get('name'), result)
-            logger.debug("Completed.")
-
-
-def execute_command(files, contract):
-    if constants.DEFAULT_TOOL == 'all':
-        exec_start(files, contract, constants.TOOLS_PROPERTIES)
-    else:
-        exec_start(files, contract, [get_tool()])
 
 
 def analyze(contract):
@@ -126,7 +27,7 @@ def analyze(contract):
 
         files = [input_sol_file, input_hex_file]
         logger.info("Analyzing contract number {}".format(contract.get_id()))
-        execute_command(files, contract)
+        app_engine.execute_command(files, contract)
         logger.info("{} contract analyze ended.".format(contract.get_id()))
     except:
         logger.exception("Get exception analyzing contract id: {}".format(contract.get_id()))
@@ -215,7 +116,7 @@ def main():
     logger.info('Execution begins')
     logger.info('Current working directory set to ' + constants.DEFAULT_DIRECTORY)
 
-    init()
+    app_engine.init()
 
     try:
         if args.list:
