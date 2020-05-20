@@ -4,10 +4,11 @@ MONGO_RESULTS_DATABASE = 'results_db'
 MONGO_RESULTS_COLLECTION = 'outputs_full'
 DEFAULT_DIRECTORY = '/Users/Ture/Documents/Blockchain/ANT-BERTO'
 DEFAULT_INPUT = '/inputs'
-DEFAULT_OUTPUT = '/outputs'
+DEFAULT_OUTPUT = 'resultados'
 DEFAULT_TOOL = 'all'
 LOG_FILENAME = 'stack_trace.log'
 LOGGER_NAME = 'Default_logger'
+PROGRESS_BAR_LEN = 180
 
 SOLC_SLITHER = '/home/slither/.py-solc/solc-v{}/bin/solc'
 

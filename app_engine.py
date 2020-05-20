@@ -21,7 +21,7 @@ def intermediate_exec(tool, cmd, version):
         if version <= 430:
             cmd.format(version)
         else:
-            return '', 0
+            return 'Unable to run analysis because solidity pragma code version.', 0
 
     executions = [docker_client.exec_create(tool.get('container'), cmd=cmd, workdir=tool.get('workdir'),
                                             privileged=True)]
@@ -64,6 +64,33 @@ def get_version(tool, path):
         return dependencies_builder.get_version(path)
     else:
         return ''
+
+
+def exec_start_gui(file, tools):
+    results = []
+    for tool in tools:
+        path = os.path.join(constants.DEFAULT_DIRECTORY, file)
+        if os.path.isfile(path):
+            version = get_version(tool, path)
+            if tool.get('name') == 'mythril' :
+                cmd = tool.get("cmd").format(version, file)
+            elif tool.get("name") == 'slither':
+                cmd = tool.get("cmd").format(constants.SOLC_SLITHER.format(version), file)
+            else:
+                cmd = tool.get("cmd").format(file)
+            result, time_elapsed = intermediate_exec(tool, cmd, version)
+        else:
+            result = "{} doesn't allow {} files format".format(tool.get('name'))
+            time_elapsed = 0
+        results.append(
+            {
+                tool.get('name') : [
+                    {'Resultado': result},
+                    {'Tiempo de ejecución': time_elapsed}
+                ]
+            }
+        )
+    return results
 
 
 # Se corren todas las herramientas diferenciando por analisis
