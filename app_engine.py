@@ -73,7 +73,7 @@ def exec_start_gui(file, tools):
         path = os.path.join(constants.DEFAULT_DIRECTORY, file)
         if os.path.isfile(path):
             version = get_version(tool, path)
-            if tool.get('name') == 'mythril' :
+            if tool.get('name') == 'mythril':
                 cmd = tool.get("cmd").format(version, file)
             elif tool.get("name") == 'slither':
                 cmd = tool.get("cmd").format(constants.SOLC_SLITHER.format(version), file)

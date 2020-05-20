@@ -45,12 +45,12 @@ def test():
     c_contracts.close()
 
 
-def test_sigle_contract(param, isAddress):
-    if isAddress:
-        contract = mdcontracts.get_contract_by_address(param)
+def test_sigle_contract(param, is_address):
+    if is_address:
+        id = mdcontracts.get_contract_by_address(param)['contract_id']
     else:
-        contract = mdcontracts.get_contract(param)
-    c = dependencies_builder.create_contract(contract['contract_id'])
+        id = mdcontracts.get_contract(param)['contract_id']
+    c = dependencies_builder.create_contract(id)
     analyze(c)
 
 

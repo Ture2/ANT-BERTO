@@ -19,14 +19,16 @@ def mongo_results_connection():
 
 def get_contract(id):
     collection = mongo_connection()
-    cursor = collection.find({'contract_id': id})
-    return cursor.next()
+    if type(id) != int:
+        id = int(id)
+    c_contracts = collection.find({'contract_id': id})
+    return c_contracts.next()
 
 
 def get_contract_by_address(address):
     collection = mongo_connection()
-    c_contracts = collection.find({'address': address})
-    return c_contracts
+    c_contracts = collection.find({'address': '{}'.format(address)})
+    return c_contracts.next()
 
 
 def get_all_contract_id():
@@ -50,11 +52,19 @@ def get_from_number(start_id):
 def insert_result(id, address, field, value, time_elapsed):
     collection = mongo_results_connection()
     query = {'contract_id': id}
-    new_values = {"$set": {
-        "{}".format(field): {
-            "output": "{}".format(value),
-            "time_elapsed": time_elapsed}},
-            "$setOnInsert": {"contract_id": id, "address": address, "timestamp": datetime.now()}}
+    new_values = {
+        "$set": {
+            "{}".format(field): {
+                "output": "{}".format(value),
+                "time_elapsed": time_elapsed
+            },
+            "timestamp": datetime.now()
+        },
+        "$setOnInsert": {
+            "contract_id": id,
+            "address": address
+        }
+    }
     collection.update(query, new_values, upsert=True)
 
 
