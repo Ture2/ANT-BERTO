@@ -1,5 +1,4 @@
 import os
-import time
 import argparse
 import dependencies_builder
 import constants
@@ -14,7 +13,7 @@ from pathlib import Path
 
 # HOST
 
-VERSION = 0.5
+VERSION = 0.6
 
 docker_client = docker.APIClient(base_url='unix://var/run/docker.sock')
 logger = logging.getLogger(constants.LOGGER_NAME)
@@ -46,8 +45,11 @@ def test():
     c_contracts.close()
 
 
-def test_sigle_contract(id):
-    contract = mdcontracts.get_contract(id)
+def test_sigle_contract(param, isAddress):
+    if isAddress:
+        contract = mdcontracts.get_contract_by_address(param)
+    else:
+        contract = mdcontracts.get_contract(param)
     c = dependencies_builder.create_contract(contract['contract_id'])
     analyze(c)
 
@@ -66,9 +68,6 @@ def test_range(*args):
             id = c_contracts.next()['contract_id']
             c = dependencies_builder.create_contract(id)
             analyze(c)
-            #if (cont % 50) == 0:
-            #    dependencies_builder.clean_input_folder()
-            #logger.info("Cleaning inputs files from {}".format(constants.DEFAULT_INPUT))
             cont = cont + 1
 
 
@@ -99,16 +98,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--test", help="Launch default test.",
                         action="store_true")
-    parser.add_argument("-uc", "--unique-contract", type=int, help="Analyze the given input contract.")
+    parser.add_argument("-i", "--identifier", type=str, help="Analyze the given identifier. Choose a number"
+                                                                   "or address")
     parser.add_argument("-r", "--range", nargs='+', type=int,
                         help="Analyze the given input number range contracts (both included).")
     parser.add_argument("-fn", "--from-number", type=int,
                         help="Analyze from given input number (included) contract until last one.")
     parser.add_argument("-d", "--directory", type=str, help="Custom output directory.")
-    parser.add_argument("-l", "--list", type=str,
-                        help="Available tools: solgraph, oyente, smartcheck, solmet, osiris, vandal, ethir, mythril,"
-                             "securify, slither, manticore, madmax")
-    parser.add_argument("-s", "--select-tool", type=str, help="Select one specific tool.")
+    parser.add_argument("-s", "--select-tool", nargs='+', type=str, help="Select one "
+                                                              "specific tool. Available tools: solgraph, oyente, "
+                                                              "smartcheck, solmet, osiris, vandal, ethir, mythril,"
+                                                              "securify, slither, manticore, madmax")
 
     args = parser.parse_args()
     constants.DEFAULT_DIRECTORY = os.getcwd()
@@ -119,19 +119,27 @@ def main():
     app_engine.init()
 
     try:
-        if args.list:
-            print("Available tools\nSolgraph\nOyente\nSolmet\nSmartcheck\nOsiris\nVandal\n")
-        if args.select_tool and str.lower(args.select_tool) in constants.TOOLS:
-            constants.DEFAULT_TOOL = str.lower(args.select_tool)
+        if args.select_tool:
+            tools = []
+            for i in range(0, len(args.select_tool)):
+                if str.lower(args.select_tool[i]) in constants.TOOLS:
+                    tools.append(str.lower(args.select_tool[i]))
+                else:
+                    logger.info("{} is not admitted, check whether is not bad written".format(args.select_tool[i]))
+            constants.DEFAULT_TOOL = tools
         if args.directory:
             logger.info('Own output directory selected -> ' + args.directory)
             dependencies_builder.create_output_dir(args.directory)
-        if args.test and (args.unique_contract is None and args.range is None and args.from_number is None):
+        if args.test and (args.identifier is None and args.range is None and args.from_number is None):
             logger.info('Default test selected')
             test()
-        elif args.unique_contract:
-            logger.info('Unique contract test selected. Contract number {}'.format(args.unique_contract))
-            test_sigle_contract(args.unique_contract)
+        elif args.identifier:
+            is_address = dependencies_builder.is_address(args.identifier)
+            if is_address:
+                logger.info('Unique contract test selected. Address {}'.format(args.identifier))
+            else:
+                logger.info('Unique contract test selected. Contract number {}'.format(args.identifier))
+            test_sigle_contract(args.identifier, is_address)
         elif args.range:
             if args.range[0] < 0 or args.range[1] < 0:
                 raise exceptions.InputError('parser', 'The range can not be less than 0')

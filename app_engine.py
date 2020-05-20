@@ -40,6 +40,7 @@ def intermediate_exec(tool, cmd, version):
 
     result = ''
     for exe in executions:
+        #TODO Ver medida del time perf counter
         time_start = time.perf_counter()
         res_iter = docker_client.exec_start(exe, stream=True, demux=True)
         time_end = time.perf_counter()
@@ -123,7 +124,11 @@ def execute_command(files, contract):
     if constants.DEFAULT_TOOL == 'all':
         exec_start(files, contract, constants.TOOLS_PROPERTIES)
     else:
-        exec_start(files, contract, [get_tool()])
+        custom_tools_properties = []
+        for tool in constants.TOOLS_PROPERTIES:
+            if tool in constants.DEFAULT_TOOL:
+                custom_tools_properties.append(tool)
+        exec_start(files, contract, custom_tools_properties)
 
 
 def init():

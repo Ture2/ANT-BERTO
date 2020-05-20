@@ -46,6 +46,10 @@ def create_contract(id):
     return contract
 
 
+def is_address(param):
+    return str(param[:2]) == '0x'
+
+
 def get_version(path):
     with open(path, "r+") as f:
         line = f.readline()
