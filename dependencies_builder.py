@@ -3,6 +3,7 @@ import constants
 import mdcontracts
 import os
 import logging
+import tempfile
 from contract_class import Contract
 
 logger = logging.getLogger(constants.LOGGER_NAME)
@@ -39,6 +40,22 @@ def doc_creation(contract):
 def create_contract(id):
     contract = Contract(id)
     content, ext, address = get_content(id)
+    contract.set_content(content)
+    contract.set_extensions(ext)
+    contract.set_address(address)
+    doc_creation(contract)
+    return contract
+
+
+# data[0]: smart contract written in solidity
+# data[1]: bytecode
+def create_contract_from_address(address, data):
+    contract = Contract(address)
+    ext = ['.hex']
+    content = {'hex': str.split(str(data[1]), 'x')[1]}
+    if data[0] != '':
+        ext.append('.sol')
+        content['sol'] = data[0][0].get('SourceCode')
     contract.set_content(content)
     contract.set_extensions(ext)
     contract.set_address(address)

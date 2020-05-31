@@ -40,7 +40,6 @@ def intermediate_exec(tool, cmd, version):
 
     result = ''
     for exe in executions:
-        #TODO Ver medida del time perf counter
         time_start = time.perf_counter()
         res_iter = docker_client.exec_start(exe, stream=True, demux=True)
         time_end = time.perf_counter()
@@ -67,10 +66,16 @@ def get_version(tool, path):
         return ''
 
 
-def exec_start_gui(file, tools):
+def exec_start_gui(files, tools):
     results = []
     for tool in tools:
-        path = os.path.join(constants.DEFAULT_DIRECTORY, file)
+        if tool.get('ext') == '.sol':
+            file = files[0]
+        else:
+            file = files[1]
+        if file == 'nofile':
+            break
+        path = os.path.join(constants.DEFAULT_DIRECTORY + constants.DEFAULT_INPUT, file)
         if os.path.isfile(path):
             version = get_version(tool, path)
             if tool.get('name') == 'mythril':
