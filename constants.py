@@ -13,7 +13,7 @@ output_created = False
 
 SOLC_SLITHER = '/home/slither/.py-solc/solc-v{}/bin/solc'
 
-EOF_STRING = '---!!!---'
+EOF_STRING = '-----------------------!!!-----------------------'
 
 TOOLS = ['solgraph', 'oyente', 'smartcheck', 'solmet', 'osiris', 'vandal', 'ethir', 'mythril', 'securify', 'slither',
          'manticore','madmax']

@@ -67,7 +67,7 @@ def get_version(tool, path):
 
 
 def exec_start_gui(files, tools):
-    results = []
+    results = ""
     for tool in tools:
         if tool.get('ext') == '.sol':
             file = files[0]
@@ -88,14 +88,8 @@ def exec_start_gui(files, tools):
         else:
             result = "{} doesn't allow {} files format".format(tool.get('name'))
             time_elapsed = 0
-        results.append(
-            {
-                tool.get('name') : [
-                    {'Resultado': result},
-                    {'Tiempo de ejecución': time_elapsed}
-                ]
-            }
-        )
+        results += "Herramienta: {} Resultado: {} Tiempo ejecución: {}\n{}\n\n\n\n".format(tool.get('name'), result,
+                                                                                   time_elapsed, constants.EOF_STRING)
     return results
 
 

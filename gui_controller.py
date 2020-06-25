@@ -15,7 +15,7 @@ def start_analysis(files, tools, is_local_analysis, address):
     if is_local_analysis:
         local_analysis(files, tools)
     else:
-        address_analysis(address, tools)
+        return address_analysis(address, tools)
 
 
 def local_analysis(files_path, tools):
@@ -45,7 +45,7 @@ def address_analysis(address, tools):
     data = contract_downloader.walk_contracts_dir(address)
     contract = dependencies_builder.create_contract_from_address(address, data)
     input_hex_file = 'input_' + contract.get_name() + '.hex'
-    if contract.get_extensions().count() > 1:
+    if len(contract.get_extensions()) > 1:
         input_sol_file = 'input_' + contract.get_name() + '.sol'
     else:
         input_sol_file = 'nofile'
@@ -61,4 +61,3 @@ def get_tools_selected(tools):
         if tools[i].get():
             temp.append(constants.TOOLS_PROPERTIES[i])
     return temp
-

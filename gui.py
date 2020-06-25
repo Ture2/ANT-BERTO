@@ -19,9 +19,25 @@ table_row_start = 4
 
 
 class ResultsFrame(Frame):
-    def __init__(self, parent, *args, **kwargs):
-        Frame.__init__(self, parent, *args, **kwargs)
+    def __init__(self, parent, arg):
+        Frame.__init__(self, parent)
         self.window = Toplevel(parent)
+        self.widget = Text(self.window)
+        self.scrollbar = Scrollbar(self.window)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.widget.pack(side=LEFT, fill=Y)
+        self.scrollbar.config(command=self.widget.yview)
+        self.widget.config(width=700, height=700, font=("Consolas", 12),
+                     padx=15, pady=15, selectbackground="white", yscrollcommand=self.scrollbar.set)
+
+        print(arg)
+        self.widget.insert(END, arg)
+
+    def print(self, r):
+        for result in r:
+            println(result)
+
+
 
     def close(self):
         self.window.destroy()
@@ -150,7 +166,7 @@ class MainGuiApplication(Frame):
         Progressbar(parent, orient=HORIZONTAL,
                     length=constants.PROGRESS_BAR_LEN, variable=self.progress, mode='determinate').grid(
             row=tools_length + table_row_start + 4, column=3, columnspan=2, sticky=W, pady=15)
-        Button(parent, text="Analizar", borderwidth=0, relief=SUNKEN, command=self.__new_window, width=10).grid(
+        Button(parent, text="Analizar", borderwidth=0, relief=SUNKEN, command=self.__analyse, width=10).grid(
             row=tools_length + table_row_start + 3, column=2, columnspan=2, sticky=W + E)
 
     def __full_option(self, i):
@@ -174,22 +190,26 @@ class MainGuiApplication(Frame):
         if (tool_check and len(self.file_paths) > 0) or (not self.is_local_analysis and tool_check):
             results, code = gui_controller.start_analysis(self.file_paths, self.tool_checkboxes, self.is_local_analysis,
                                                           self.entry_address.get())
+
+            self.__new_window(results)
         else:
             tkmb.showinfo(message="Debe seleccionar al menos una herramienta y elegir un contrato",
                           title="Error al introducir los datos")
         if code == 200:
             tkmb.showinfo(message="Informative message")
 
-    def __new_window(self):
+    def __new_window(self, results):
         if not self.is_one_result_open:
-            self.results_window = ResultsFrame(root)
+            self.results_window = ResultsFrame(root, results)
             self.is_one_result_open = True
         else:
             self.results_window.close()
-            self.results_window = ResultsFrame(root)
+            self.results_window = ResultsFrame(root, results)
 
 
 if __name__ == "__main__":
     root = Tk()
     MainGuiApplication(root)
     root.mainloop()
+
+
