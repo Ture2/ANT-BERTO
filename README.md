@@ -31,11 +31,11 @@ db.createCollection('outputs_full')
 ```
 Technically, you could use whatever name you want. The tool currently is working with those names but in constants file you could set up any name you want.
 
-To download full database contract: 'SET LINK HERE'
+To download full database contract: https://drive.google.com/drive/folders/1sgB0DB8jxY5ouhuCiNDlcEOisrtqmPlj?usp=sharing
 
 Import the dataset into our database with the following command:
 ```
-mongoimport --db mydb --collection contratos_full --file contratosexport.json
+mongoimport --db mydb --collection contratos_full --file export.json
 ```
 Then you could run the tool.
 If you see some pip package that is not installed, just install it with pip an try again.
